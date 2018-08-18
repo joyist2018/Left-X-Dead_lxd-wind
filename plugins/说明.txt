@@ -1,0 +1,14 @@
+﻿首先删除 
+
+leftdead/cfg/sourcemod/lxd-wind.cfg 文件
+
+然后覆盖所有smx文件到 
+
+leftdead/addons/sourcemod/plugins/ 目录下替换以前的文件即可
+
+
+
+plugins注解:
+sm_evilbeam.smx   设置光束给玩家[RP插件需要]
+sm_evilrocket.smx 发射火箭插件[RP插件需要]
+lxd_wind-l4d_damage_1_0_0.smx 黑枪伤害惩罚加强版

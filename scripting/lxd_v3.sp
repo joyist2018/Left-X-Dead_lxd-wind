@@ -91,8 +91,8 @@ new bool:bIncappedOrDead[MAXPLAYERS+1];
 
 public Plugin:myinfo = 
 {
-	name = "LeftXDead",
-	author = "Mad_Dugan & DDR Khat & Wind",
+	name = "L4D2_CloudsSky_MOD",
+	author = "Mad_Dugan & DDR Khat & Joyist",
 	description = "Allows X players to play as survivor",
 	version = PLUGIN_VERSION,
 	url = "http://forums.alliedmods.net/showthread.php?t=89422"
@@ -105,6 +105,7 @@ public OnPluginStart()
 	
 	host = GetConVarInt(FindConVar("hostip"));
 	
+	// 漫步云端服务器
 	// 977119173 是深圳服务器
 	// -1062731419 是本地笔记本服务器
 	// -1062731420 台式机的
@@ -120,24 +121,24 @@ public OnPluginStart()
 	if(host == 977119173 || host == -1062731419 || host == -1062731420 || host == -1062700088 || host == 2030784975)
 	{
 */
-	LogAction(0, -1, "验证通过,欢迎使用LxD插件,反馈信息请联系QQ:264590.");
-	SetConVarInt(FindConVar("sv_steamgroup"), 1096818);
+	LogAction(0, -1, "验证通过,欢迎使用LxD插件,反馈信息请联系QQ群:706789052.");
+	SetConVarInt(FindConVar("sv_steamgroup"), 32592630);
 	CreateConVar("sm_l8d_version", PLUGIN_VERSION, "LXD版本号", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-	sm_l8d_waitok = CreateConVar("sm_l8d_wait", "20","添加机器人延时推荐不低于十五秒",FCVAR_PLUGIN);
+	sm_l8d_waitok = CreateConVar("sm_l8d_wait", "15","添加机器人延时推荐不低于十五秒",FCVAR_PLUGIN);
 	sm_luck_tank = CreateConVar("sm_rp_lucktank", "1","是否激活趣味TANK系统",FCVAR_PLUGIN);
-	sm_luck_witch =  CreateConVar("sm_rp_luckwitch", "1","是否激活隐身女巫",FCVAR_PLUGIN);
+	sm_luck_witch =  CreateConVar("sm_rp_luckwitch", "0","是否激活隐身女巫",FCVAR_PLUGIN);
 	sm_witch_limit = CreateConVar("witch_limit", "2","每次刷出TANK后随机出现的Witch数量",FCVAR_PLUGIN);
 
 	opcheat = CreateConVar("sm_op_cheat", "1","是否禁止玩家使用作弊功能 数值为0可解决其他插件不能使用作弊功能的问题",FCVAR_PLUGIN);
 	sm_l8d_cheatok = CreateConVar("sm_op_cheats_level","99:z","能使用作弊指令的权限等级",FCVAR_PLUGIN);
 	
-	sm_l8d_slotok = CreateConVar("sm_l8d_slot", "14","最大玩家数量推荐不超过十八",FCVAR_PLUGIN);
+	sm_l8d_slotok = CreateConVar("sm_l8d_slot", "18","最大玩家数量推荐不超过十八",FCVAR_PLUGIN);
 
-	sm_l8d_difficulty = CreateConVar("sm_l8d_difficulty", "Impossible", "难度锁定", FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	sm_l8d_difficulty = CreateConVar("sm_l8d_difficulty", "Normal", "难度锁定(Easy简单，Normal正常，Hard困难，Impossible专家)", FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	sm_l8d_doubleitems = CreateConVar("sm_l8d_doubleitems", "1", "双重补给", FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	sm_doit	=	CreateConVar("sm_doit", "1", "管理员强制玩家执行命令开关", FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	L4DInfectedLimit = FindConVar("z_max_player_zombies");
-	InfectedLimit = CreateConVar("l8d_infected_limit","18","感染者上限最大数量十八", CVAR_FLAGS,true,0.01,true,18.00);
+	InfectedLimit = CreateConVar("l8d_infected_limit","18","感染者上限最大数量18人", CVAR_FLAGS,true,0.01,true,18.00);
 
 	h_timeout_value = CreateConVar("l4d_client_timeout_value", "120", "设置客户端因为更换地图或其他原因超时时间", ADMFLAG_KICK, false, 0.0, false, 0.0);
 	TimeOut_Value = GetConVarInt(h_timeout_value);
@@ -145,16 +146,19 @@ public OnPluginStart()
 	
 	HookConVarChange(h_timeout_value, ConVarTimeoutValue);
 	
-	RegAdminCmd("sm_l8d_menu", L8DMenu, ADMFLAG_KICK, "Enable L8D");
+	RegAdminCmd("sm_l8d_menu", L8DMenu, ADMFLAG_KICK, "开启 L8D");
 	RegAdminCmd ("sm_do", ClientFakeExec, ADMFLAG_RCON);
-	RegAdminCmd("sm_l8d_changemap", L8DMapMenu, ADMFLAG_KICK, "Select co-op map for LXD.");
-	RegAdminCmd("sm_wind",Windadd,ADMFLAG_KICK, "Create one bot to take over");
-	RegConsoleCmd("sm_addbot",CreateOneBot, "Create one bot to take over");
-	RegConsoleCmd("sm_bot",typebot, "Create one bot to take over");
-	RegConsoleCmd("sm_joingame",AddPlayer, "Attempt to join Survivors");
-	RegConsoleCmd("sm_away",GoAFK,"Let a player go AFK");
-
-	RegAdminCmd("sm_l8d_hardzombies", L8DHardZombies, ADMFLAG_KICK, "Increase Zombie amount (-1 off, 1 on)");
+	RegAdminCmd("sm_l8d_changemap", L8DMapMenu, ADMFLAG_KICK, "为LXD选择合作地图.");
+	RegAdminCmd("sm_wind",Windadd,ADMFLAG_KICK, "强制突破人数限制创建机器人来接管");
+	RegConsoleCmd("sm_addbot",CreateOneBot, "创建一个机器人来接管");
+	RegConsoleCmd("sm_bot",typebot, "创建一个机器人来接管");
+	RegConsoleCmd("sm_joingame",AddPlayer, "尝试加入幸存者");
+	RegConsoleCmd("sm_join",AddPlayer, "尝试加入幸存者");	
+	RegConsoleCmd("sm_jg",AddPlayer, "尝试加入幸存者");
+	RegConsoleCmd("sm_away",GoAFK,"让一个玩家闲置AFK");
+	RegConsoleCmd("sm_afk",GoAFK,"让一个玩家闲置AFK");
+	
+	RegAdminCmd("sm_l8d_hardzombies", L8DHardZombies, ADMFLAG_KICK, "增加僵尸数量(-1关，1开)");
 	
 	SetConVarBounds(L4DInfectedLimit,   ConVarBound_Upper, true, 18.0);
 	
@@ -316,7 +320,7 @@ public Action:kickfreeplayer(Handle:timer)
 		{
 		if (GetUserFlagBits(i)&ADMFLAG_ROOT > 0) continue;
 		PrintToChatAll ("\x04[提示:]\x03%N\x04由于长时间空闲\x03现已T出服务器!!",i);
-		KickClient(i, "幸存者玩家还存在BOT的情况下长期空闲将会被T出游戏! [QQ群:37624488]");
+		KickClient(i, "幸存者玩家还存在BOT的情况下,长期空闲将会被T出游戏!\n CloudsSky_MOD [联络QQ群:706789052]");
     }
 	}
 	
@@ -347,7 +351,7 @@ SetTimeOut(client)
 	
 	if (!StrEqual(ipaddr,"loopback",false))
 	{
-		// We change the timeout
+		// 我们改变超时时间
 		Format (cmd, sizeof(cmd), "cl_timeout %i", TimeOut_Value);
 		ClientCommand(client, cmd);
 	}
@@ -426,8 +430,8 @@ public Action:Event_Tank_Spawn(Handle:event, const String:name[], bool:dontBroad
 	{
 	SetEntityRenderMode(TankId, RenderMode:3);
 	SetEntityRenderColor(TankId, 0, 0, 0, 0);
-	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",16000);
-	SetEntProp(TankId,Prop_Send,"m_iHealth",16000);
+	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",26000);
+	SetEntProp(TankId,Prop_Send,"m_iHealth",26000);
 	SetEntPropFloat(TankId, Prop_Data, "m_flLaggedMovementValue", 0.5);
 	// CreateTimer(10.0, timetankcfg,_, TIMER_FLAG_NO_MAPCHANGE);
 	HXTank = false;
@@ -438,8 +442,8 @@ public Action:Event_Tank_Spawn(Handle:event, const String:name[], bool:dontBroad
 	{
 	SetEntityRenderMode(TankId, RenderMode:3);
 	SetEntityRenderColor(TankId, 255, 0, 0, 255);
-	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",8000);
-	SetEntProp(TankId,Prop_Send,"m_iHealth",8000);
+	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",28000);
+	SetEntProp(TankId,Prop_Send,"m_iHealth",18000);
 	SetEntPropFloat(TankId, Prop_Data, "m_flLaggedMovementValue", 2.0);
 	// CreateTimer(10.0, timetankcfg,_, TIMER_FLAG_NO_MAPCHANGE);
 	RedTank = false;
@@ -450,8 +454,8 @@ public Action:Event_Tank_Spawn(Handle:event, const String:name[], bool:dontBroad
 	{
 	SetEntityRenderMode(TankId, RenderMode:3);
 	SetEntityRenderColor(TankId, 0, 0, 255, 255);
-	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",20000);
-	SetEntProp(TankId,Prop_Send,"m_iHealth",20000);
+	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",32000);
+	SetEntProp(TankId,Prop_Send,"m_iHealth",12000);
 	SetEntPropFloat(TankId, Prop_Data, "m_flLaggedMovementValue", 1.6);
 	// CreateTimer(10.0, timetankcfg,_, TIMER_FLAG_NO_MAPCHANGE);
 	BlueTank = false;
@@ -462,8 +466,8 @@ public Action:Event_Tank_Spawn(Handle:event, const String:name[], bool:dontBroad
 	{
 	SetEntityRenderMode(TankId, RenderMode:3);
 	SetEntityRenderColor(TankId, 0, 255, 0, 255);
-	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",8000);
-	SetEntProp(TankId,Prop_Send,"m_iHealth",8000);
+	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",18000);
+	SetEntProp(TankId,Prop_Send,"m_iHealth",12000);
 	SetEntPropFloat(TankId, Prop_Data, "m_flLaggedMovementValue", 1.1);
 	// CreateTimer(10.0, timetankcfg,_, TIMER_FLAG_NO_MAPCHANGE);
 	GreenTank = false;
@@ -487,7 +491,7 @@ public Action:Event_Tank_Spawn(Handle:event, const String:name[], bool:dontBroad
 	if(ZoeyTank && TankId)
 	{
 	SetEntityModel(TankId,"models/survivors/survivor_teenangst.mdl");          //ZOEY
-	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",16000);
+	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",26000);
 	SetEntProp(TankId,Prop_Send,"m_iHealth",16000);
 	SetEntPropFloat(TankId, Prop_Data, "m_flLaggedMovementValue", 1.5);
 	// CreateTimer(10.0, timetankcfg,_, TIMER_FLAG_NO_MAPCHANGE);
@@ -498,7 +502,7 @@ public Action:Event_Tank_Spawn(Handle:event, const String:name[], bool:dontBroad
 	if(BillTank && TankId)
 	{
 	SetEntityModel(TankId,"models/survivors/survivor_namvet.mdl");            //BILL
-	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",12000);
+	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",32000);
 	SetEntProp(TankId,Prop_Send,"m_iHealth",12000);
 	SetEntPropFloat(TankId, Prop_Data, "m_flLaggedMovementValue", 1.1);
 	// CreateTimer(10.0, timetankcfg,_, TIMER_FLAG_NO_MAPCHANGE);
@@ -509,8 +513,8 @@ public Action:Event_Tank_Spawn(Handle:event, const String:name[], bool:dontBroad
 	if(LysTank && TankId)
 	{
 	SetEntityModel(TankId,"models/survivors/survivor_manager.mdl");           //Louis
-	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",14000);
-	SetEntProp(TankId,Prop_Send,"m_iHealth",14000);
+	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",28000);
+	SetEntProp(TankId,Prop_Send,"m_iHealth",15000);
 	SetEntPropFloat(TankId, Prop_Data, "m_flLaggedMovementValue", 1.1);
 	// CreateTimer(10.0, timetankcfg,_, TIMER_FLAG_NO_MAPCHANGE);
 	LysTank = false;
@@ -520,8 +524,8 @@ public Action:Event_Tank_Spawn(Handle:event, const String:name[], bool:dontBroad
 	if(FrsTank && TankId)
 	{
 	SetEntityModel(TankId,"models/survivors/survivor_biker.mdl");             //Francis
-	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",8000);
-	SetEntProp(TankId,Prop_Send,"m_iHealth",8000);
+	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",28000);
+	SetEntProp(TankId,Prop_Send,"m_iHealth",18000);
 	SetEntPropFloat(TankId, Prop_Data, "m_flLaggedMovementValue", 1.1);
 	// CreateTimer(10.0, timetankcfg,_, TIMER_FLAG_NO_MAPCHANGE);
 	FrsTank = false;
@@ -531,8 +535,8 @@ public Action:Event_Tank_Spawn(Handle:event, const String:name[], bool:dontBroad
 	if(HunterTank && TankId)
 	{
 	SetEntityModel(TankId,"models/infected/hunter.mdl");               //Hunter
-	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",16000);
-	SetEntProp(TankId,Prop_Send,"m_iHealth",16000);
+	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",28000);
+	SetEntProp(TankId,Prop_Send,"m_iHealth",19000);
 	SetEntPropFloat(TankId, Prop_Data, "m_flLaggedMovementValue", 1.1);
 	// CreateTimer(10.0, timetankcfg,_, TIMER_FLAG_NO_MAPCHANGE);
 	HunterTank = false;
@@ -542,8 +546,8 @@ public Action:Event_Tank_Spawn(Handle:event, const String:name[], bool:dontBroad
 	if(SmokerTank && TankId)
 	{
 	SetEntityModel(TankId,"models/infected/smoker.mdl");               //smoker
-	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",1000);
-	SetEntProp(TankId,Prop_Send,"m_iHealth",1000);
+	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",31000);
+	SetEntProp(TankId,Prop_Send,"m_iHealth",18000);
 	SetEntPropFloat(TankId, Prop_Data, "m_flLaggedMovementValue", 1.1);
 	// CreateTimer(10.0, timetankcfg,_, TIMER_FLAG_NO_MAPCHANGE);
 	SmokerTank = false;
@@ -553,8 +557,8 @@ public Action:Event_Tank_Spawn(Handle:event, const String:name[], bool:dontBroad
 	if(BoomerTank && TankId)
 	{
 	SetEntityModel(TankId,"models/infected/boomer.mdl");               //boomer
-	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",100);
-	SetEntProp(TankId,Prop_Send,"m_iHealth",100);
+	SetEntProp(TankId,Prop_Send,"m_iMaxHealth",8000);
+	SetEntProp(TankId,Prop_Send,"m_iHealth",5000);
 	SetEntPropFloat(TankId, Prop_Data, "m_flLaggedMovementValue", 1.1);
 	// CreateTimer(10.0, timetankcfg,_, TIMER_FLAG_NO_MAPCHANGE);
 	BoomerTank = false;
@@ -632,8 +636,8 @@ tankluckmode()
             case 0: //火红的地狱TANK,速度快
             {
         RedTank = true;
-        // StripAndChangeServerConVarInt("z_tank_health", 2000);  //血 默认4000
-        // StripAndChangeServerConVarInt("z_tank_speed", 600); //速度 默认 210
+        StripAndChangeServerConVarInt("z_tank_health", 5000);  //血 默认4000
+        StripAndChangeServerConVarInt("z_tank_speed", 600); //速度 默认 210
         StripAndChangeServerConVarInt("tank_burn_duration_expert", 90); // 着火死亡时间 默认 40
         StripAndChangeServerConVarInt("z_tank_throw_interval", tank_throw); //投掷间隔 默认5
         StripAndChangeServerConVarInt("tank_throw_min_interval", tank_throw_min); //投掷间隔最短限制 默认8
@@ -642,15 +646,15 @@ tankluckmode()
         StripAndChangeServerConVarInt("tank_swing_physics_prop_force", tank_rock_radius); //投掷力道 默认4
         StripAndChangeServerConVarInt("tank_fist_radius", tank_attack_radius); //攻击范围 默认15
         // CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
-        // PrintToChatAll("\x01[趣味TANK:] \x03当前登场TANK:超速度,奈高温,由于不适应地球生活,所以很容易死[2000HP].\x03");
+        PrintToChatAll("\x01[神秘TANK:] \x03当前登场TANK:超速度,奈高温,由于不适应地球生活,所以很容易死[4000HP].\x03");
         bALLEnabled =	false;
         return;
             }
             case 1: //火星来的TANK
             {
         HXTank = true;
-        // StripAndChangeServerConVarInt("z_tank_health", 8000);  //血 默认4000
-        // StripAndChangeServerConVarInt("z_tank_speed", 100); //速度 默认 210
+        StripAndChangeServerConVarInt("z_tank_health", 38000);  //血 默认4000
+        //StripAndChangeServerConVarInt("z_tank_speed", 100); //速度 默认 210
         StripAndChangeServerConVarInt("tank_burn_duration_expert", tank_fire); // 着火死亡时间 默认 40
         StripAndChangeServerConVarInt("z_tank_throw_interval", 3); //投掷间隔 默认5
         StripAndChangeServerConVarInt("tank_throw_min_interval", 1); //投掷间隔最短限制 默认8
@@ -658,16 +662,16 @@ tankluckmode()
         StripAndChangeServerConVarInt("z_tank_rock_radius", 500); // 投掷距离 默认 100
         StripAndChangeServerConVarInt("tank_swing_physics_prop_force", 12); //投掷力道 默认4
         StripAndChangeServerConVarInt("tank_burn_duration_expert", 20); //攻击范围 默认15
-        // CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
-        // PrintToChatAll("\x01[趣味TANK:] \x03当前登场TANK:地球人是看不见的,由于火星重力高,所以绝对是丢石头好手,强于地球TANK.\x03");
+        //CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
+        PrintToChatAll("\x01[神秘TANK:] \x03当前登场TANK:地球人是看不见的,由于火星重力高,所以绝对是丢石头好手,强于地球TANK.\x03");
         bALLEnabled =	false;
         return;
             }
             case 2: //春哥家绿TANK
             {
         GreenTank = true;
-        // StripAndChangeServerConVarInt("z_tank_health", 1000);  //血 默认4000
-        // StripAndChangeServerConVarInt("z_tank_speed", tank_speed); //速度 默认 210
+        StripAndChangeServerConVarInt("z_tank_health", 14000);  //血 默认4000
+        //StripAndChangeServerConVarInt("z_tank_speed", tank_speed); //速度 默认 210
         StripAndChangeServerConVarInt("tank_burn_duration_expert", tank_fire); // 着火死亡时间 默认 40
         StripAndChangeServerConVarInt("z_tank_throw_interval", tank_throw); //投掷间隔 默认5
         StripAndChangeServerConVarInt("tank_throw_min_interval", tank_throw_min); //投掷间隔最短限制 默认8
@@ -675,16 +679,16 @@ tankluckmode()
         StripAndChangeServerConVarInt("z_tank_rock_radius", tank_rock_limit); // 投掷距离 默认 100
         StripAndChangeServerConVarInt("tank_swing_physics_prop_force", tank_rock_radius); //投掷力道 默认4
         StripAndChangeServerConVarInt("tank_fist_radius", 30); //攻击范围 默认15
-        // CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
-        // PrintToChatAll("\x01[趣味TANK:] \x03当前登场TANK:春哥家养的,凡是被攻击者,无论多少血,都会被打来只有一滴血,但是永远打不死.\x03");
+        //CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
+        PrintToChatAll("\x01[神秘TANK:] \x03当前登场TANK:春哥家养的,凡是被攻击者,无论多少血,都会被打来只有一滴血,但是永远打不死.\x03");
         bALLEnabled =	false;
         return;
             }
-            case 3: //OB家白色TANK
+            case 3: //白化实验TANK
             {
         WhiteTank = true;   
-        // StripAndChangeServerConVarInt("z_tank_health", 10000);  //血 默认4000
-        // StripAndChangeServerConVarInt("z_tank_speed", 150); //速度 默认 210
+        StripAndChangeServerConVarInt("z_tank_health", 15000);  //血 默认4000
+        StripAndChangeServerConVarInt("z_tank_speed", 150); //速度 默认 210
         StripAndChangeServerConVarInt("tank_burn_duration_expert", 90); // 着火死亡时间 默认 40
         StripAndChangeServerConVarInt("z_tank_throw_interval", tank_throw); //投掷间隔 默认5
         StripAndChangeServerConVarInt("tank_throw_min_interval", tank_throw_min); //投掷间隔最短限制 默认8
@@ -692,16 +696,16 @@ tankluckmode()
         StripAndChangeServerConVarInt("z_tank_rock_radius", tank_rock_limit); // 投掷距离 默认 100
         StripAndChangeServerConVarInt("tank_swing_physics_prop_force", tank_rock_radius); //投掷力道 默认4
         StripAndChangeServerConVarInt("tank_fist_radius", 60); //攻击范围 默认15
-        // CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
-        // PrintToChatAll("\x01[趣味TANK:] \x03当前登场TANK:OB家养的,经常被关紧闭,所以脾气不太好一击必杀.\x03");
+        //CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
+        PrintToChatAll("\x01[神秘TANK:] \x03当前登场TANK:白化TANK,经常被拉去做实验,所以脾气不太好一击必杀.\x03");
         bALLEnabled =	false;
         return;
             }
             case 4: //蓝色的TANK
             {
         BlueTank = true;
-        // StripAndChangeServerConVarInt("z_tank_health", 15000);  //血 默认4000
-        // StripAndChangeServerConVarInt("z_tank_speed", 800); //速度 默认 210
+        StripAndChangeServerConVarInt("z_tank_health", 15000);  //血 默认4000
+        StripAndChangeServerConVarInt("z_tank_speed", 800); //速度 默认 210
         StripAndChangeServerConVarInt("tank_burn_duration_expert", 90); // 着火死亡时间 默认 40
         StripAndChangeServerConVarInt("z_tank_throw_interval", 2); //投掷间隔 默认5
         StripAndChangeServerConVarInt("tank_throw_min_interval", 1); //投掷间隔最短限制 默认8
@@ -709,16 +713,16 @@ tankluckmode()
         StripAndChangeServerConVarInt("z_tank_rock_radius", 250); // 投掷距离 默认 100
         StripAndChangeServerConVarInt("tank_swing_physics_prop_force", 15); //投掷力道 默认4
         StripAndChangeServerConVarInt("tank_fist_radius", 30); //攻击范围 默认15
-        // CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
-        // PrintToChatAll("\x01[趣味TANK:] \x03当前登场TANK:蓝巨人看过么,不对那叫绿巨人,没关系啦,反正就是灭团的专家.\x03");
+        //CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
+        PrintToChatAll("\x01[神秘TANK:] \x03当前登场TANK:蓝巨人看过么,不对那叫绿巨人,没关系啦,反正就是灭团的专家.\x03");
         bALLEnabled =	false;
         return;
             }
             case 5: //人形TANK
             {
         ZoeyTank = true;
-        // StripAndChangeServerConVarInt("z_tank_health", 15000);  //血 默认4000
-        // StripAndChangeServerConVarInt("z_tank_speed", 300); //速度 默认 210
+        StripAndChangeServerConVarInt("z_tank_health", 15000);  //血 默认4000
+        StripAndChangeServerConVarInt("z_tank_speed", 300); //速度 默认 210
         StripAndChangeServerConVarInt("tank_burn_duration_expert", 90); // 着火死亡时间 默认 40
         StripAndChangeServerConVarInt("z_tank_throw_interval", 3); //投掷间隔 默认5
         StripAndChangeServerConVarInt("tank_throw_min_interval", 1); //投掷间隔最短限制 默认8
@@ -726,16 +730,16 @@ tankluckmode()
         StripAndChangeServerConVarInt("z_tank_rock_radius", 300); // 投掷距离 默认 100
         StripAndChangeServerConVarInt("tank_swing_physics_prop_force", 13); //投掷力道 默认4
         StripAndChangeServerConVarInt("tank_fist_radius", 60); //攻击范围 默认15
-        // CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
-        // PrintToChatAll("\x01[趣味TANK:] \x03当前登场TANK:神秘TANK,暂不告诉大家是什么哈哈.\x03");
+        //CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
+        PrintToChatAll("\x01[神秘TANK:] \x03因某人见死不救导致[佐伊]死亡，怨气汇聚变身为TANK来寻仇了,个别人请小心了哈哈!!!\x03");
         bALLEnabled =	false;
         return;
             }
             case 6: //人形TANK
             {
         BillTank = true;
-        // StripAndChangeServerConVarInt("z_tank_health", 15000);  //血 默认4000
-        // StripAndChangeServerConVarInt("z_tank_speed", 300); //速度 默认 210
+        StripAndChangeServerConVarInt("z_tank_health", 15000);  //血 默认4000
+        StripAndChangeServerConVarInt("z_tank_speed", 300); //速度 默认 210
         StripAndChangeServerConVarInt("tank_burn_duration_expert", 90); // 着火死亡时间 默认 40
         StripAndChangeServerConVarInt("z_tank_throw_interval", 15); //投掷间隔 默认5
         StripAndChangeServerConVarInt("tank_throw_min_interval", 18); //投掷间隔最短限制 默认8
@@ -743,16 +747,16 @@ tankluckmode()
         StripAndChangeServerConVarInt("z_tank_rock_radius", 100); // 投掷距离 默认 100
         StripAndChangeServerConVarInt("tank_swing_physics_prop_force", 4); //投掷力道 默认4
         StripAndChangeServerConVarInt("tank_fist_radius", 30); //攻击范围 默认15
-        // CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
-        // PrintToChatAll("\x01[趣味TANK:] \x03当前登场TANK:神秘TANK,暂不告诉大家是什么哈哈.\x03");
+        //CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
+        PrintToChatAll("\x01[神秘TANK:] \x03因某人见死不救导致[比尔]死亡，怨气汇聚变身为TANK来寻仇了,个别人请小心了哈哈!!!\x03");
         bALLEnabled =	false;
         return;
             }
             case 7: //人形TANK
             {
         LysTank = true;
-        // StripAndChangeServerConVarInt("z_tank_health", 15000);  //血 默认4000
-        // StripAndChangeServerConVarInt("z_tank_speed", 300); //速度 默认 210
+        StripAndChangeServerConVarInt("z_tank_health", 15000);  //血 默认4000
+        StripAndChangeServerConVarInt("z_tank_speed", 300); //速度 默认 210
         StripAndChangeServerConVarInt("tank_burn_duration_expert", 90); // 着火死亡时间 默认 40
         StripAndChangeServerConVarInt("z_tank_throw_interval", 15); //投掷间隔 默认5
         StripAndChangeServerConVarInt("tank_throw_min_interval", 18); //投掷间隔最短限制 默认8
@@ -760,16 +764,16 @@ tankluckmode()
         StripAndChangeServerConVarInt("z_tank_rock_radius", 100); // 投掷距离 默认 100
         StripAndChangeServerConVarInt("tank_swing_physics_prop_force", 4); //投掷力道 默认4
         StripAndChangeServerConVarInt("tank_fist_radius", 30); //攻击范围 默认15
-        // CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
-        // PrintToChatAll("\x01[趣味TANK:] \x03当前登场TANK:神秘TANK,暂不告诉大家是什么哈哈.\x03");
+        //CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
+        PrintToChatAll("\x01[神秘TANK:] \x03因某人见死不救导致[路易斯]死亡，怨气汇聚变身为TANK来寻仇了,个别人请小心了哈哈!!!\x03");
         bALLEnabled =	false;
         return;
             }
             case 8: //人形TANK
             {
         FrsTank = true;
-        // StripAndChangeServerConVarInt("z_tank_health", 15000);  //血 默认4000
-        // StripAndChangeServerConVarInt("z_tank_speed", 300); //速度 默认 210
+        StripAndChangeServerConVarInt("z_tank_health", 15000);  //血 默认4000
+        StripAndChangeServerConVarInt("z_tank_speed", 300); //速度 默认 210
         StripAndChangeServerConVarInt("tank_burn_duration_expert", 90); // 着火死亡时间 默认 40
         StripAndChangeServerConVarInt("z_tank_throw_interval", 15); //投掷间隔 默认5
         StripAndChangeServerConVarInt("tank_throw_min_interval", 18); //投掷间隔最短限制 默认8
@@ -777,16 +781,16 @@ tankluckmode()
         StripAndChangeServerConVarInt("z_tank_rock_radius", 100); // 投掷距离 默认 100
         StripAndChangeServerConVarInt("tank_swing_physics_prop_force", 4); //投掷力道 默认4
         StripAndChangeServerConVarInt("tank_fist_radius", 30); //攻击范围 默认15
-        // CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
-        // PrintToChatAll("\x01[趣味TANK:] \x03当前登场TANK:神秘TANK,暂不告诉大家是什么哈哈.\x03");
+        //CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
+        PrintToChatAll("\x01[神秘TANK:] \x03因某人见死不救导致[弗朗西斯]死亡，怨气汇聚变身为TANK来寻仇了,个别人请小心了哈哈!!!\x03");
         bALLEnabled =	false;
         return;
             }
             case 9: //人形TANK
             {
         HunterTank = true;
-        // StripAndChangeServerConVarInt("z_tank_health", 15000);  //血 默认4000
-        // StripAndChangeServerConVarInt("z_tank_speed", 300); //速度 默认 210
+        StripAndChangeServerConVarInt("z_tank_health", 15000);  //血 默认4000
+        StripAndChangeServerConVarInt("z_tank_speed", 300); //速度 默认 210
         StripAndChangeServerConVarInt("tank_burn_duration_expert", 90); // 着火死亡时间 默认 40
         StripAndChangeServerConVarInt("z_tank_throw_interval", 15); //投掷间隔 默认5
         StripAndChangeServerConVarInt("tank_throw_min_interval", 18); //投掷间隔最短限制 默认8
@@ -794,16 +798,16 @@ tankluckmode()
         StripAndChangeServerConVarInt("z_tank_rock_radius", 100); // 投掷距离 默认 100
         StripAndChangeServerConVarInt("tank_swing_physics_prop_force", 4); //投掷力道 默认4
         StripAndChangeServerConVarInt("tank_fist_radius", 30); //攻击范围 默认15
-        // CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
-        // PrintToChatAll("\x01[趣味TANK:] \x03当前登场TANK:神秘TANK,暂不告诉大家是什么哈哈.\x03");
+        //CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
+        PrintToChatAll("\x01[神秘TANK:] \x03现场所有死亡的[猎人]鬼魂通过祭献合体,召唤出来Hunter坦克复仇了,你还能存活吗?!!!\x03");
         bALLEnabled =	false;
         return;
             }
             case 10: //人形TANK
             {
         SmokerTank = true;
-        // StripAndChangeServerConVarInt("z_tank_health", 15000);  //血 默认4000
-        // StripAndChangeServerConVarInt("z_tank_speed", 300); //速度 默认 210
+        StripAndChangeServerConVarInt("z_tank_health", 15000);  //血 默认4000
+        StripAndChangeServerConVarInt("z_tank_speed", 300); //速度 默认 210
         StripAndChangeServerConVarInt("tank_burn_duration_expert", 90); // 着火死亡时间 默认 40
         StripAndChangeServerConVarInt("z_tank_throw_interval", 15); //投掷间隔 默认5
         StripAndChangeServerConVarInt("tank_throw_min_interval", 18); //投掷间隔最短限制 默认8
@@ -812,15 +816,15 @@ tankluckmode()
         StripAndChangeServerConVarInt("tank_swing_physics_prop_force", 4); //投掷力道 默认4
         StripAndChangeServerConVarInt("tank_fist_radius", 30); //攻击范围 默认15
         // CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
-        // PrintToChatAll("\x01[趣味TANK:] \x03当前登场TANK:神秘TANK,暂不告诉大家是什么哈哈.\x03");
+        PrintToChatAll("\x01[神秘TANK:] \x03现场所有死亡的[烟鬼]鬼魂通过祭献合体,召唤出来Smoker坦克复仇了,你还能存活吗?!!!\x03");
         bALLEnabled =	false;
         return;
             }
             case 11: //人形TANK
             {
         BoomerTank = true;
-        // StripAndChangeServerConVarInt("z_tank_health", 15000);  //血 默认4000
-        // StripAndChangeServerConVarInt("z_tank_speed", 300); //速度 默认 210
+        StripAndChangeServerConVarInt("z_tank_health", 15000);  //血 默认4000
+        StripAndChangeServerConVarInt("z_tank_speed", 300); //速度 默认 210
         StripAndChangeServerConVarInt("tank_burn_duration_expert", 90); // 着火死亡时间 默认 40
         StripAndChangeServerConVarInt("z_tank_throw_interval", 15); //投掷间隔 默认5
         StripAndChangeServerConVarInt("tank_throw_min_interval", 18); //投掷间隔最短限制 默认8
@@ -829,15 +833,15 @@ tankluckmode()
         StripAndChangeServerConVarInt("tank_swing_physics_prop_force", 4); //投掷力道 默认4
         StripAndChangeServerConVarInt("tank_fist_radius", 30); //攻击范围 默认15
         // CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
-        // PrintToChatAll("\x01[趣味TANK:] \x03当前登场TANK:神秘TANK,暂不告诉大家是什么哈哈.\x03");
+        PrintToChatAll("\x01[神秘TANK:]\x03现场所有死亡的[胖子]鬼魂通过祭献合体,召唤出来Boomer坦克复仇了,你还能存活吗?!!!\x03");
         bALLEnabled =	false;
         return;
             }
             case 12: //人形TANK
             {
         WitchTank = true;
-        // StripAndChangeServerConVarInt("z_tank_health", 15000);  //血 默认4000
-        // StripAndChangeServerConVarInt("z_tank_speed", 300); //速度 默认 210
+        StripAndChangeServerConVarInt("z_tank_health", 15000);  //血 默认4000
+        StripAndChangeServerConVarInt("z_tank_speed", 300); //速度 默认 210
         StripAndChangeServerConVarInt("tank_burn_duration_expert", 90); // 着火死亡时间 默认 40
         StripAndChangeServerConVarInt("z_tank_throw_interval", 3); //投掷间隔 默认5
         StripAndChangeServerConVarInt("tank_throw_min_interval", 1); //投掷间隔最短限制 默认8
@@ -846,7 +850,7 @@ tankluckmode()
         StripAndChangeServerConVarInt("tank_swing_physics_prop_force", 15); //投掷力道 默认4
         StripAndChangeServerConVarInt("tank_fist_radius", 60); //攻击范围 默认15
         // CreateTimer(5.0, creattank,_, TIMER_FLAG_NO_MAPCHANGE);
-        // PrintToChatAll("\x01[趣味TANK:] \x03当前登场TANK:神秘TANK,暂不告诉大家是什么哈哈.\x03");
+        PrintToChatAll("\x01[神秘TANK:]\x03不妙,[女巫]通过不可描述的祭献合体,召唤出来Witch坦克复仇了,你知道胆颤心惊吗?!!!\x03");
         bALLEnabled =	false;
         return;
             }
@@ -860,13 +864,14 @@ tankluckmode()
         StripAndChangeServerConVarInt("z_tank_rock_radius", 250); // 投掷距离 默认 100
         StripAndChangeServerConVarInt("tank_swing_physics_prop_force", 15); //投掷力道 默认4
         StripAndChangeServerConVarInt("tank_fist_radius", 60); //攻击范围 默认15
-        // PrintToChatAll("\x01[趣味TANK:] \x03当前登场TANK:黄金TANK,被攻击者立即被冰冻.\x03");
+        PrintToChatAll("\x01[神秘TANK:]\x03当前登场TANK:黄金GoldTANK,被攻击者立即被冰冻.\x03");
         bALLEnabled =	false;
         return;
             }
             case 14: //紫色TANK
             {
         ZSTank = true;
+		//StripAndChangeServerConVarInt("z_tank_health", 12000);  //血 默认4000
         StripAndChangeServerConVarInt("tank_burn_duration_expert", 90); // 着火死亡时间 默认 40
         StripAndChangeServerConVarInt("z_tank_throw_interval", 3); //投掷间隔 默认5
         StripAndChangeServerConVarInt("tank_throw_min_interval", 1); //投掷间隔最短限制 默认8
@@ -874,7 +879,7 @@ tankluckmode()
         StripAndChangeServerConVarInt("z_tank_rock_radius", 250); // 投掷距离 默认 100
         StripAndChangeServerConVarInt("tank_swing_physics_prop_force", 15); //投掷力道 默认4
         StripAndChangeServerConVarInt("tank_fist_radius", 60); //攻击范围 默认15
-        // PrintToChatAll("\x01[趣味TANK:] \x03当前登场TANK:阴险的紫色TANK,被攻击者会被挂上定时炸弹.\x03");
+        PrintToChatAll("\x01[神秘TANK:]\x03来自中东阿富汗的[本拉登]被感染变为[人肉炸弹TANK],通身紫色被攻击到,身上会奇怪的滴滴作响.\x03");
         bALLEnabled =	false;
         return;
             }
@@ -1068,7 +1073,7 @@ public l8dcheat()
 	PrintToServer("admincheats hooked %i commands",nextHooked);
 	if (nextHooked >= MAX_COMMANDS)
 	{
-		LogToGame("[admincheats] WARNING: Too many cheat commands to hook them all, increase MAX_COMMANDS");
+		LogToGame("[admincheats] 警告：太多的作弊命令不能将它们全部连接起来，增加MAX_COMMANDS");
 	}
 }
 
@@ -1197,7 +1202,7 @@ public Action:AddPlayer(client, args)
 	
 	if(IsClientInGame(client)&&CheckBots()>0 && GetClientTeam(client) == 1)
 	{
-	PrintToChat(client, "\x05[加入失败:]\x04请等待BOT被拯救后再输入!joingame或退出游戏重新加入亦可.");
+	PrintToChat(client, "\x05[加入失败:]\x04请等待BOT被拯救后,\n再输入!jg或!joingame加入游戏,或退出游戏重新加入亦可.");
 	return Plugin_Handled;
 	}
 	
@@ -1214,7 +1219,7 @@ public Action:GoAFK(client, args)
 	}
 	else if(IsClientInGame(client))
 	{
-	PrintToChat(client, "\x05[SM:]\x04 您将会在15秒后空闲,重新加入请输入!joingame");
+	PrintToChat(client, "\x05[SM:]\x04 您将会在15秒后闲置,重新加入请输入!jg或!joingame加入游戏.");
 	CreateTimer(15.0, timeAFK, client);
 	return Plugin_Handled;
 	}
@@ -1305,7 +1310,7 @@ public OnMapStart()
 	// LogAction(0, -1, "DEBUG:OnMapStart段落");
 	if(bL8DEnabled)
 	{
-		PrintToChatAll("\x01[SM] LeftXDead %s 加载完毕.\x03", PLUGIN_VERSION);
+		PrintToChatAll("\x01[提示:] L4D2_CloudsSky_MOD %s 加载完毕.\x03", PLUGIN_VERSION);
 		
 		new String:MapName[80];
 		GetCurrentMap(MapName, sizeof(MapName));
@@ -1320,9 +1325,9 @@ public OnMapStart()
 		}
 		else
 		{
-			// only do this for first coop map or all maps in survival
+			// 只对第一个coop地图或所有生存地图这样做
 			
-			// Manually change difficulty mode since locked by versus lobby
+			// 手动改变难度模式后,锁定对抗大厅versus lobby
 			SetConVarInt(FindConVar("z_difficulty_locked"), 0, true);
 			SetConVarString(FindConVar("z_difficulty"), szDifficulty, true);
 
@@ -1366,17 +1371,17 @@ public Action:L8DMenu(client, args)
 	
 	if(client == 0)
 	{
-		ReplyToCommand(client, "\x01[SM] Usage: type '!l8d_enable' in chat\x03");
+		ReplyToCommand(client, "\x01[提示:] 用法:打字!l8d_enable在聊天框\x03");
 		return;
 	}
 	
 	if(GetConVarInt(FindConVar("sv_hosting_lobby")) == 1)
 	{
-		ReplyToCommand(client, "\x01[SM] Server was started from lobby.  LeftXDead can not start because mp_gamemode is locked\x03");
+		ReplyToCommand(client, "\x01[提示:] 服务器从大厅启动。L4D2_CloudsSky_MOD无法启动，因为mp_gamemode已锁定");
 		return;
 	}
 	
-	L8DModeMenu(client, args); // set gome mode
+	L8DModeMenu(client, args); //设置gome模式
 }
 
 AfterModeSelection(client)
@@ -1388,13 +1393,13 @@ AfterModeSelection(client)
 	
 	SetConVarBounds(FindConVar("survivor_limit"), ConVarBound_Upper, true, GetConVarInt(sm_l8d_slotok) * 1.0);
 	
-	SetConVarInt(FindConVar("sv_alltalk"), 1); // so you can tell the infected what is happening
+	SetConVarInt(FindConVar("sv_alltalk"), 1); // 所以你可以告诉被感染的人正在发生的事情
 	SetConVarInt(FindConVar("vs_max_team_switches"), 9999);
 
 	SetConVarInt(FindConVar("sb_all_bot_team"), 1);
-	SetConVarString(FindConVar("mp_gamemode"), gamemode, true, false); // switches to co-op/survival mode
+	SetConVarString(FindConVar("mp_gamemode"), gamemode, true, false); // 切换到合作co-op/survival 生存模式
 
-	PrintToChatAll("\x01[SM] LeftXDead %s 激活完毕 BY WIND [QQ Group:40827870].\x03", PLUGIN_VERSION);
+	PrintToChatAll("\x01[提示:] L4D2_CloudsSky_MOD %s 激活完毕 [QQ Group:706789052].\x03", PLUGIN_VERSION);
 
 	SetConVarInt(FindConVar("sv_vote_issue_change_difficulty_allowed"), 1, true, false);
 	SetConVarInt(FindConVar("sv_vote_issue_change_map_now_allowed"), 1, true, false);
@@ -1580,7 +1585,7 @@ public L8DMapMenuVoteHandler(Handle:menu, MenuAction:action, param1, param2)
 
 public Action:Windadd(client, args)
 {
-PrintToChatAll("\x01[SM] LXD %s 修改 BY WIND [玩家数上限被强制增加!]\x03", PLUGIN_VERSION);
+PrintToChatAll("\x01[提示:] LXD %s 修改 [玩家数上限被强制增加!]\x03", PLUGIN_VERSION);
 l8dbot();
 PrintToChatAll("\x01[提示:] 额定玩家上限 [%i] 强制激活玩家数量 [%i] 当前加入玩家数量 [%i] 当前版本 [%s]\x03",GetConVarInt(sm_l8d_slotok),Survivors(),AliveSurvivors(),PLUGIN_VERSION);
 return Plugin_Handled;
@@ -1595,18 +1600,18 @@ return Plugin_Handled;
 public Action:CreateOneBot(client, args)
 {
 	// LogAction(0, -1, "DEBUG:createonebot 段落");
-	//PrintToChat(client,"\x01[SM] %i 秒后BOT将会被创建.\x03",GetConVarInt(sm_l8d_waitok));
-	//PrintHintText(client,"\x01[WIND] %i 秒后BOT将会被创建,请等待.\x03",GetConVarInt(sm_l8d_waitok));
+	//PrintToChat(client,"\x01[提示:] %i 秒后BOT将会被创建.\x03",GetConVarInt(sm_l8d_waitok));
+	//PrintHintText(client,"\x01[提示:] %i 秒后BOT将会被创建,请等待.\x03",GetConVarInt(sm_l8d_waitok));
 	if(Survivors()<GetConVarInt(sm_l8d_slotok)&&bL8DEnabled)
 	{
-	PrintCenterText(client,"\x01[WIND] %i 秒后BOT将会被创建,请等待.\x03",GetConVarInt(sm_l8d_waitok));
+	PrintCenterText(client,"\x01[提示:] %i 秒后BOT将会被创建,请等待.\x03",GetConVarInt(sm_l8d_waitok));
 	CreateTimer(GetConVarInt(sm_l8d_waitok) * 1.0, krisebot,client, TIMER_FLAG_NO_MAPCHANGE);
 	return Plugin_Handled;
 	}
 	else
 	{
-	PrintToChat(client,"\x01[SM] 服务器额定玩家数量已到达 [%i] 上限 当前激活玩家数量 [%i] 只有管理员输入!wind才可强制增加上限.\x03",GetConVarInt(sm_l8d_slotok),Survivors());
-	//PrintToChatAll("\x01[SM] 服务器额定玩家数量已到达 [%i] 上限 当前激活玩家数量 [%i] 只有管理员输入!wind才可强制增加上限.\x03", GetConVarInt(sm_l8d_slotok),Survivors());
+	PrintToChat(client,"\x01[提示:] 服务器额定玩家数量已到达 [%i] 上限 当前激活玩家数量 [%i] 只有管理员输入!win才可强制增加上限.\x03",GetConVarInt(sm_l8d_slotok),Survivors());
+	//PrintToChatAll("\x01[提示:] 服务器额定玩家数量已到达 [%i] 上限 当前激活玩家数量 [%i] 只有管理员输入!win才可强制增加上限.\x03", GetConVarInt(sm_l8d_slotok),Survivors());
 	return Plugin_Handled;	
 	}
 }
@@ -1621,8 +1626,8 @@ public Action:krisebot(Handle:timer,any:client)
 	}
 	else
 	{
-	PrintToChat(client,"\x01[SM] 服务器额定玩家数量已到达 [%i] 上限 当前激活玩家数量 [%i] 只有管理员输入!wind才可强制增加上限.\x03",GetConVarInt(sm_l8d_slotok),Survivors());
-	//PrintToChatAll("\x01[SM] 服务器额定玩家数量已到达 [%i] 上限 当前激活玩家数量 [%i] 只有管理员输入!wind才可强制增加上限.\x03", GetConVarInt(sm_l8d_slotok),Survivors());
+	PrintToChat(client,"\x01[提示:] 服务器额定玩家数量已到达 [%i] 上限 当前激活玩家数量 [%i] 只有管理员输入!win才可强制增加上限.\x03",GetConVarInt(sm_l8d_slotok),Survivors());
+	//PrintToChatAll("\x01[提示:] 服务器额定玩家数量已到达 [%i] 上限 当前激活玩家数量 [%i] 只有管理员输入!win才可强制增加上限.\x03", GetConVarInt(sm_l8d_slotok),Survivors());
 	return Plugin_Handled;
 	}
 }
@@ -1633,14 +1638,14 @@ public OnClientConnected(client)
 	//ClientCommand(client,"bind f4 \"sm_admin\"");
 }
 
-/* Empty server handling */
+/* 空服务器处理 */
 
 public OnClientDisconnect(client)
 {
 	bhastank[client] = false;
 }
 
-/* helper functions */
+/* 帮助函数helper functions */
 UnsetCheatVar(Handle:hndl)
 {
 	// LogAction(0, -1, "DEBUG:unsetcheatvar 段落");
@@ -1649,7 +1654,7 @@ UnsetCheatVar(Handle:hndl)
 	SetConVarFlags(hndl, flags);
 }
 
-/* lifted from l4dhax and modified. Creates a survivor bot */
+/* 从l4dhax升起并修改。创建一个幸存者机器人 */
 public Action:l8dbot()
 {
 	// LogAction(0, -1, "DEBUG:l8dbot 段落");
@@ -1657,19 +1662,19 @@ public Action:l8dbot()
 	{
 		// bDisallowBot = false;
 		new bot = CreateFakeClient("I am not real.");
-		PrintToChatAll("\x01[SM] BOT 被成功创建,加入请输入!joingame.\x03");
+		PrintToChatAll("\x01[提示:] BOT 被成功创建,加入请输入!joingame加入游戏.\x03");
 		
 		if(bot != 0)
 		{
 			ChangeClientTeam(bot, 2);
 			if(DispatchKeyValue(bot, "classname", "SurvivorBot") == false)
 			{
-				PrintToChatAll("\x01[SM] 创建BOT失败,设置名字异常.\x03");
+				PrintToChatAll("\x01[提示:] 创建BOT失败,设置名字异常.\x03");
 			}
 			
 			if(DispatchSpawn(bot) == false)
 			{
-				PrintToChatAll("\x01[SM] 创建BOT失败,服务器已全满.\x03");
+				PrintToChatAll("\x01[提示:] 创建BOT失败,服务器已全满.\x03");
 			}
 			
 			SetEntityRenderColor(bot, 128, 0, 0, 255);
@@ -1690,7 +1695,7 @@ public Action:l8dbot()
 				}
 				else
 				{
-					PrintToChatAll("\x01[SM] 给BOT装备失败.\x03");
+					PrintToChatAll("\x01[提示:] 给BOT装备失败.\x03");
 				}
 
 				SetCommandFlags("give", flags|FCVAR_CHEAT);
@@ -1701,7 +1706,7 @@ public Action:l8dbot()
 		}
 		else
 		{
-			PrintToChatAll("\x01[SM] 无法继续创建BOT.\x03");
+			PrintToChatAll("\x01[提示:] 无法继续创建BOT.\x03");
 		}
 	}
 }
@@ -1714,7 +1719,7 @@ public Action:kickbot(Handle:timer, any:value)
 	return Plugin_Stop;
 }
 
-/* Finale asthetics handling */
+/* 大结局的美学处理*/
 public Event_FinaleVehicleLeaving(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	// LogAction(0, -1, "DEBUG:event_finalevehiclelevaving 段落");
@@ -1849,7 +1854,7 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 
 }
 
-/* Difficulty handling*/
+/* Difficulty handling难度设定处理*/
 public Action:L8DHardZombies(client, args) 
 {
 	// LogAction(0, -1, "DEBUG:l8dhardzombies 段落");
@@ -1859,21 +1864,21 @@ public Action:L8DHardZombies(client, args)
 	new Input=StringToInt(arg[0]);
 	if(Input==1)
 	{
-		StripAndChangeServerConVarInt("z_common_limit", 60); // Default
-		StripAndChangeServerConVarInt("z_mob_spawn_min_size", 20); // Default
-		StripAndChangeServerConVarInt("z_mob_spawn_max_size", 60); // Default
-		StripAndChangeServerConVarInt("z_mob_spawn_finale_size", 40); // Default
-		StripAndChangeServerConVarInt("z_mega_mob_size", 90); // Default
+		StripAndChangeServerConVarInt("z_common_limit", 60); // Default默认
+		StripAndChangeServerConVarInt("z_mob_spawn_min_size", 20); // Default默认
+		StripAndChangeServerConVarInt("z_mob_spawn_max_size", 60); // Default默认
+		StripAndChangeServerConVarInt("z_mob_spawn_finale_size", 40); // Default默认
+		StripAndChangeServerConVarInt("z_mega_mob_size", 90); // Default默认
 	}		
 	else if(Input>1&&Input<7)
 	{
-		StripAndChangeServerConVarInt("z_common_limit", 30*Input); // Default 30
-		StripAndChangeServerConVarInt("z_mob_spawn_min_size", 30*Input); // Default 10
-		StripAndChangeServerConVarInt("z_mob_spawn_max_size", 30*Input); // Default 30
-		StripAndChangeServerConVarInt("z_mob_spawn_finale_size", 30*Input); // Default 20
-		StripAndChangeServerConVarInt("z_mega_mob_size", 30*Input); // Default 45
+		StripAndChangeServerConVarInt("z_common_limit", 30*Input); // Default默认 30
+		StripAndChangeServerConVarInt("z_mob_spawn_min_size", 30*Input); // Default默认 10
+		StripAndChangeServerConVarInt("z_mob_spawn_max_size", 30*Input); // Default默认 30
+		StripAndChangeServerConVarInt("z_mob_spawn_finale_size", 30*Input); // Default默认 20
+		StripAndChangeServerConVarInt("z_mega_mob_size", 30*Input); // Default默认 45
 	}
-	else {ReplyToCommand(client, "\x01[SM] 帮助: 你需要多少僵尸?. (倍率为 30. 参数从: 1 ~ 7)");ReplyToCommand(client, "\x01          : 怪物太多即会LAG,推荐值为不超过3.");}
+	else {ReplyToCommand(client, "\x01[提示:] 帮助: 你需要多少僵尸?. (倍率为 30. 参数从: 1 ~ 7)");ReplyToCommand(client, "\x01          : 怪物太多即会LAG,推荐值为不超过3.");}
 	return Plugin_Handled;
 }
 
@@ -1885,21 +1890,21 @@ public Action:UpdateCounts(Handle:timer)
 
 	if(bDoubleItemCounts)
 	{
-		PrintToChatAll("\x01[SM] LeftXDead 多重补给品装载完毕.\x03");
+		PrintToChatAll("\x01[提示:] CloudsSky_MOD 多重补给品装载完毕.\x03");
 		
 		// update fixed item spawn counts to handle 8 players
 		// These only update item spawns found in starting area/saferooms
-		UpdateEntCount("weapon_pumpshotgun_spawn","17"); // defaults 4/5
-		UpdateEntCount("weapon_smg_spawn", "17"); // defaults 4/5
-		UpdateEntCount("weapon_rifle_spawn", "17"); // defaults 4/5
-		UpdateEntCount("weapon_hunting_rifle_spawn", "17"); // default 4/5
-		UpdateEntCount("weapon_autoshotgun_spawn", "17"); // default 4/5
-		UpdateEntCount("weapon_first_aid_kit_spawn", "4"); // default 1
+		UpdateEntCount("weapon_pumpshotgun_spawn","17"); // Default默认s 4/5
+		UpdateEntCount("weapon_smg_spawn", "17"); // Default默认s 4/5
+		UpdateEntCount("weapon_rifle_spawn", "17"); // Default默认s 4/5
+		UpdateEntCount("weapon_hunting_rifle_spawn", "17"); // Default默认 4/5
+		UpdateEntCount("weapon_autoshotgun_spawn", "17"); // Default默认 4/5
+		UpdateEntCount("weapon_first_aid_kit_spawn", "4"); // Default默认 1
 		
-		// pistol spawns come in two flavors stacks of 5, or multiple singles props
-		UpdateEntCount("weapon_pistol_spawn", "16"); // defaults 1/4/5
+		// 手枪的产生或多个近战道具 pistol spawns come in two flavors stacks of 5, or multiple singles props
+		UpdateEntCount("weapon_pistol_spawn", "16"); // Default默认s 1/4/5
 		
-		// StripAndChangeServerConVarInt("director_pain_pill_density", 12);  // default 6
+		// StripAndChangeServerConVarInt("director_pain_pill_density", 12);  // Default默认 6
 	}
 	else
 	{
